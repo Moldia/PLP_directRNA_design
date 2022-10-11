@@ -289,23 +289,39 @@ def select_sequences(path,selected,genes_required,number_of_selected,subgroup=1)
     selected2=pd.DataFrame(columns=selected.columns)
     unigene=genes_required
     for e in unigene:
+        print(e)
         ele=pan[pan['Gene']==e]
         if ele.shape[0]<number_of_selected:
-            sele=ele
+            selec=ele
         else:    
-            randomlist = random.sample(range(0, ele.shape[0]), number_of_selected) 
-            sele=ele.iloc[randomlist,:]
-        selected2=pd.concat([selected2,sele])
+            for num in range(0,number_of_selected):
+                randomlist = random.sample(range(0, ele.shape[0]), 1)
+                sele=ele.iloc[randomlist,:]
+                try:
+                    seleall=pd.concat([seleall,sele])
+                except:
+                    seleall=sele
+                exclude=list(range(int(sele['Position']-20),int(sele['Position']+20)))
+                ele=ele.loc[~ele['Position'].isin(exclude),:]
+            selec=seleall
+        selected2=pd.concat([selected2,selec])
     selected2.to_csv(path+'/selected_targets_group'+str(subgroup)+'.csv')
     return selected2
-
+    
 def check_plps(bcf_all,final_designed,genes,path,subgroup=1):
     import pandas as pd
     import numpy as np
     import random
     bcf_all2=bcf_all[bcf_all['Gene'].isin(genes['Gene'])]
     bcf_all['same']=(bcf_all['exp_hits']==bcf_all['number_of_hits'])*1
-    bcf=bcf_all.loc[bcf_all['same'].isin([1])]
+    outp=[]
+    for s in bcf_all.index:
+        r=str(bcf_all.loc[s,'hits']).count(bcf_all.loc[s,'Gene'])
+        outp.append(r)
+    bcf_all['number_hits_same']=list(outp)
+    bcf_all['same2']=(bcf_all['exp_hits']==bcf_all['number_hits_same'])*1
+    bcf=bcf_all.loc[bcf_all['same2'].isin([1])]
+    bcf=bcf.loc[bcf['same'].isin([1])]
     bcfexc=bcf_all.loc[~bcf_all['same'].isin([1])]
     bcfexc_todesign=bcfexc[~bcfexc['Gene'].isin(bcf['Gene'])]
     bcfexc_todesign=bcfexc_todesign[bcfexc_todesign['Gene'].isin(genes['Gene'])]
@@ -323,6 +339,8 @@ def check_plps(bcf_all,final_designed,genes,path,subgroup=1):
             sele=ele.iloc[randomlist,:]
         selected=pd.concat([selected,sele])
     bcf=selected
+
+
     bcf.to_csv(path+'/good_targets'+str(subgroup)+'.csv')
     genes_too_low_PLPs=bcf.groupby(['Gene']).count()[bcf.groupby(['Gene']).count()['hits']<final_designed]
     genes_too_low_PLPs=genes_too_low_PLPs.iloc[:,0:1]
