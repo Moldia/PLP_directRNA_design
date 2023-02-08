@@ -295,14 +295,15 @@ def select_sequences(path,selected,genes_required,number_of_selected,subgroup=1)
             selec=ele
         else:    
             for num in range(0,number_of_selected):
-                randomlist = random.sample(range(0, ele.shape[0]), 1)
-                sele=ele.iloc[randomlist,:]
-                try:
-                    seleall=pd.concat([seleall,sele])
-                except:
-                    seleall=sele
-                exclude=list(range(int(sele['Position']-20),int(sele['Position']+20)))
-                ele=ele.loc[~ele['Position'].isin(exclude),:]
+                if ele.shape[0]>0:
+                    randomlist = random.sample(range(0, ele.shape[0]), 1)
+                    sele=ele.iloc[randomlist,:]
+                    try:
+                        seleall=pd.concat([seleall,sele])
+                    except:
+                        seleall=sele
+                    exclude=list(range(int(sele['Position']-20),int(sele['Position']+20)))
+                    ele=ele.loc[~ele['Position'].isin(exclude),:]
             selec=seleall
         selected2=pd.concat([selected2,selec])
     selected2.to_csv(path+'/selected_targets_group'+str(subgroup)+'.csv')
@@ -602,16 +603,17 @@ def plot_alignment_of_variants(refpath,freqseq,alignment):
     from Bio import AlignIO
     import random
     import numpy as np
-    colors=['r','b','g','c','o','p','y','r','b','g','c','o','r','b','g','c','o','r','b','g','c','o','r','b','g','c','o','p','y','r','b','g','c','o','r','b','g','c','o','r','b','g','c','o']
-    fig, ax = plt.subplots(figsize=(10,(5*(np.size(freqseq,axis=0)))),nrows=np.size(freqseq,axis=0),ncols=1)  
-    for s in range(0,np.size(freqseq,axis=0)):
-        ax[s].plot(range(0,alignment.get_alignment_length()),freqseq[s,:],c=colors[s])
-        ax[s].set_title(alignment[s].id)
-#        ax[s].set_xlab('Bases of the transcript')
-#        ax[s].set_ylab('Numb. of variants matching the base')
-        ax[s].hlines(len(alignment)+0.01,linestyles='--',xmin=0,xmax=alignment.get_alignment_length(),colors=[0,0,0])
+    colors=['r','b','g','c']#'o','p','y','r','b','g','c','o','r','b','g','c','o','r','b','g','c','o','r','b','g','c','o','p','y','r','b','g','c','o','r','b','g','c','o','r','b','g','c','o']
+    if np.size(freqseq,axis=0)<4:
+        fig, ax = plt.subplots(figsize=(10,(5*(np.size(freqseq,axis=0)))),nrows=np.size(freqseq,axis=0),ncols=1)  
+        for s in range(0,np.size(freqseq,axis=0)):
+            ax[s].plot(range(0,alignment.get_alignment_length()),freqseq[s,:],c=colors[s])
+            ax[s].set_title(alignment[s].id)
+    #        ax[s].set_xlab('Bases of the transcript')
+    #        ax[s].set_ylab('Numb. of variants matching the base')
+            ax[s].hlines(len(alignment)+0.01,linestyles='--',xmin=0,xmax=alignment.get_alignment_length(),colors=[0,0,0])
 
-    plt.savefig(refpath+'/common_regions_though_variants.png')
+        plt.savefig(refpath+'/common_regions_though_variants.png')
 
 
 def extract_seqs_for_variants(path,genesexp,listo,lista,ref,pathclustal):
