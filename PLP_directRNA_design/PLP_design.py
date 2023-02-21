@@ -26,7 +26,7 @@ def extractseq(goi,ref):
             else:
                 lout=lout+line[:-1]       
         if line in goi:
-            seqs.append(line)
+   #        seqs.append(line)
             su=1
             lout=''
     return seqs
