@@ -810,7 +810,7 @@ def extract_seqs_for_variants(path,genesexp,listo,lista,ref,pathclustal):
     selected['exp_hits']=selected['Gene'].map(hits)
     return selected,unigene,notfound
 
-def map_sequences(selected, subgroup, mis_treshold):
+def map_sequences(selected, subgroup, mis_threshold, transcriptome):
     kmers =list(selected['Sequence'])
     #transcriptome = (ref)
     seqlist = []
@@ -826,7 +826,7 @@ def map_sequences(selected, subgroup, mis_treshold):
         command = [
             "cutadapt", "-j", "0", "-a", sequence, "--overlap", "30", 
             "--untrimmed-output", "/dev/null", transcriptome, 
-            "--no-indels", "-e", mismatches, "--action=none"
+            "--no-indels", "-e", mis_threshold, "--action=none"
         ]
 
         output = subprocess.check_output(command).decode('utf-8')
