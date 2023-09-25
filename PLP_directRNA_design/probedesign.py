@@ -828,9 +828,9 @@ def map_sequences(selected, subgroup, mis_threshold, transcriptome=ref):
         import subprocess
 
         command = [
-            "cutadapt", "-j", "0", "-a", sequence, "--overlap", "30", 
-            "--untrimmed-output", "/dev/null", transcriptome, 
-            "--no-indels", "-e", mis_threshold, "--action=none"
+            "cutadapt", "-j", "0", "-a", str(sequence), "--overlap", "30", 
+            "--untrimmed-output", "/dev/null", str(transcriptome), 
+            "--no-indels", "-e", str(mis_threshold), "--action=none"
         ]
 
         output = subprocess.check_output(command).decode('utf-8')
