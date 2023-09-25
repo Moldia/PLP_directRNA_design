@@ -819,7 +819,16 @@ def map_sequences(selected,subgroup=1):
         s=s+1
         print ('Looking for sequence ('+str(s)+'/'+str(len(kmers))+'): '+sequence + ' allowing ' + str(mismatches) + ' mismatches')
         ########################################MODIFY CUTADAPT PATH IF NEEDED#############################
-        output= !cutadapt -j 0 -a $sequence --overlap 30 --untrimmed-output /dev/null $transcriptome --no-indels -e $mismatches --action=none 
+        import subprocess
+
+        command = [
+            "cutadapt", "-j", "0", "-a", sequence, "--overlap", "30", 
+            "--untrimmed-output", "/dev/null", transcriptome, 
+            "--no-indels", "-e", mismatches, "--action=none"
+        ]
+
+        output = subprocess.check_output(command).decode('utf-8')
+        #output= !cutadapt -j 0 -a $sequence --overlap 30 --untrimmed-output /dev/null $transcriptome --no-indels -e $mismatches --action=none 
         n=0
         c2 = [line for line in output if line[0:1] == '>']
         print ('Found '+str(len(c2))+' hits')
