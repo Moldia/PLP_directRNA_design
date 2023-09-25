@@ -1,17 +1,19 @@
 def extractseq(goi,ref):
-	'''
-	The extractseq function takes two arguments: goi, a list of specific genes of interest, 
-	and ref, the path to a reference file containing biological sequences. 
-	The function reads through the reference file line by line and extracts the sequences 
-	that correspond to the genes specified in the goi list. The extracted sequences are stored 
-	in a list called seqs, which is then returned. 
-	The function is designed to work with files where each biological sequence starts 
-	with a '>' character followed by metadata, and the actual sequence spans one or more 
-	lines until the next '>' character appears. Note that the function expects the 
-	reference file to be formatted in such a way that each gene and its corresponding 
-	sequence are adjacent lines in the file.'''
-	
-    import pandas as pd 
+
+    '''
+    The extractseq function takes two arguments: goi, a list of specific genes of interest, 
+    and ref, the path to a reference file containing biological sequences. 
+    The function reads through the reference file line by line and extracts the sequences 
+    that correspond to the genes specified in the goi list. The extracted sequences are stored 
+    in a list called seqs, which is then returned. 
+    The function is designed to work with files where each biological sequence starts 
+    with a '>' character followed by metadata, and the actual sequence spans one or more 
+    lines until the next '>' character appears. Note that the function expects the 
+    reference file to be formatted in such a way that each gene and its corresponding 
+    sequence are adjacent lines in the file.
+    '''
+    
+    import pandas as pd
     from pandas import DataFrame
     import Bio
     from Bio import SeqIO
@@ -60,15 +62,15 @@ def extractseq(goi,ref):
 def extract_seqs(genes, ref, column='Gene'):
 
 
-	'''
-	The function takes in three arguments:
+    '''
+    The function takes in three arguments:
 
     genes: A DataFrame containing gene information. The DataFrame must contain a column specified by the column parameter (default to 'Gene').
     ref: The path to a file that contains sequence information in FASTA format.
     column: The column name to look for in the genes DataFrame when extracting sequences (default is 'Gene').
 
-	The function extract all the mRNA sequences corresponding to a specific gene, by doing this:
-	
+    The function extract all the mRNA sequences corresponding to a specific gene, by doing this:
+
     Open the reference file specified by ref and read its content.
     Initialize several lists (headers, header, seq, listo, lista) and a dictionary (dictionary)
     as placeholders for various data.
@@ -82,7 +84,7 @@ def extract_seqs(genes, ref, column='Gene'):
     and lista (counts of matching headers).
 
 
-	'''
+    '''
     # Import required libraries
     import pandas as pd
     from Bio import SeqIO, SeqUtils, Seq, SeqRecord, AlignIO
@@ -127,14 +129,13 @@ def extract_seqs(genes, ref, column='Gene'):
     # Return the unique gene identifiers, matching headers, and counts
     return genesexp, listo, lista
 
-
 def findtargets (mrna,refpath,ie,outfiles,plp_length=30,gc_min=50,gc_max=65,ligationsite_GC=True):
-	'''
-	The function extracts, for a given mRNA, all the possible k-mers.
-	k (k-mer length) is specified by plp_length (int, defaults to 30).
-	The k-mers are then filtered by upper and lower GC content (defaults = 50-65),
-	and screened for G or C at the ligation site (beneficial but not crucial, optional but default =True)
-	'''
+    '''
+    The function extracts, for a given mRNA, all the possible k-mers.
+    k (k-mer length) is specified by plp_length (int, defaults to 30).
+    The k-mers are then filtered by upper and lower GC content (defaults = 50-65),
+    and screened for G or C at the ligation site (beneficial but not crucial, optional but default =True)
+    '''
     import pandas as pd 
     from pandas import DataFrame
     import Bio
@@ -165,13 +166,12 @@ def findtargets (mrna,refpath,ie,outfiles,plp_length=30,gc_min=50,gc_max=65,liga
                     pato = refpath + '/target_regions_' + mrna.id + '_' + str(ie) + '.csv'
                     outfiles.append(pato)
                     targets.to_csv(pato)
-    return [targets,outfiles]   
-
+    return [targets,outfiles] 
 
 def plot_alignment(refpath,alignment,common):
-	 """
+    """
     Plots common regions through sequence variants.
-    
+
     Parameters:
     refpath (str): The directory path where the plot will be saved.
     alignment (Bio.Align.MultipleSeqAlignment): The multiple sequence alignment object.
@@ -197,22 +197,18 @@ def plot_alignment(refpath,alignment,common):
     plt.xlim([0,alignment.get_alignment_length()])
     plt.savefig(refpath+'/common_regions_though_variants.png')
     plt.close(fig)
-
-
-
-
-
+    
 def extract_and_align(genes,ref,path,pathclustal):
-	'''
-	The purpose of this function is to extract and align multiple sequences 
-	for a given list of genes from a reference.
-	The function requires the user to have ClustalW2 installed and specify its path
-	If multiple sequences are available for a gene, the function uses ClustalW to perform 
-	sequence alignment. It also calculates the most common characters at each position 
-	and uses this information for further analysis or visualization.
-	
-	notfound: List of genes that were not found.
-	'''
+    '''
+    The purpose of this function is to extract and align multiple sequences 
+    for a given list of genes from a reference.
+    The function requires the user to have ClustalW2 installed and specify its path
+    If multiple sequences are available for a gene, the function uses ClustalW to perform 
+    sequence alignment. It also calculates the most common characters at each position 
+    and uses this information for further analysis or visualization.
+
+    notfound: List of genes that were not found.
+    '''
     import pandas as pd 
     import os
     from pandas import DataFrame
@@ -348,9 +344,6 @@ def extract_and_align(genes,ref,path,pathclustal):
     selected['exp_hits']=selected['Gene'].map(hits)
     return selected,unigene,notfound
 
-
-
-
 def retrieve_targets(outfiles,path):
     print("Extracting all possible targets for all genes")
     import numpy as np
@@ -369,17 +362,17 @@ def retrieve_targets(outfiles,path):
 
 
 def select_sequences(path,selected,genes_required,number_of_selected,subgroup=1):
-	'''
-	The function takes in five parameters:
-	The function select_sequences is intended to filter and select a specified number of 
-	sequences from a given dataset based on given genes and other parameters.
+    '''
+    The function takes in five parameters:
+    The function select_sequences is intended to filter and select a specified number of 
+    sequences from a given dataset based on given genes and other parameters.
 
     path: The location where the resulting CSV will be saved.
     selected: A DataFrame containing sequences.
     genes_required: A list of genes to be included.
     number_of_selected: The number of sequences to be selected for each gene.
     subgroup: An optional parameter to label the resulting CSV file; it defaults to 1.
-	'''
+    '''
     import pandas as pd
     import random 
     pan=selected
@@ -405,12 +398,12 @@ def select_sequences(path,selected,genes_required,number_of_selected,subgroup=1)
         selected2=pd.concat([selected2,selec])
     selected2.to_csv(path+'/selected_targets_group'+str(subgroup)+'.csv')
     return selected2
-    
+
 def check_plps(bcf_all,final_designed,genes,path,subgroup=1):
-	'''
-	This function checks the output of the mapping function, to exclude the non-specific
-	Padlock probes.
-	'''
+    '''
+    This function checks the output of the mapping function, to exclude the non-specific
+    Padlock probes.
+    '''
     import pandas as pd
     import numpy as np
     import random
@@ -458,7 +451,6 @@ def check_plps(bcf_all,final_designed,genes,path,subgroup=1):
     genes_no_PLPs=bcfexc_todesign['Gene'].unique()
     bcf.to_csv(path+'/specific_targets_'+str(subgroup)+'.csv')
     return bcf,genes_good_PLPs, genes_too_low_PLPs, genes_no_PLPs
-
 
 def build_plps(path,specific_seqs_final,L_probe_library,plp_length,how='start',on=201): #starts, end, customized
     import pandas as pd
@@ -541,11 +533,9 @@ def build_plps(path,specific_seqs_final,L_probe_library,plp_length,how='start',o
         x = Seq(row['Sequence'])
         y = x.reverse_complement()
         y = y.upper()
-        if y[round(plp_length/2)-1] == "C" or y[round(plp_length/2)-1] == "G":
-            probesP1 = probesP1.append({"Rarm": str(y[0:round(plp_length/2)]), "Larm": str(y[round(plp_length/2):plp_length]), "anchor" : "TGCGTCTATTTAGTGGAGCC", "idseq" : gene_names_ID2.loc[r]['idseq'], "Lbar_ID" : gene_names_ID2.loc[r]['Lbar_ID'], "AffyID" : gene_names_ID2.loc[r]['AffyID'], "Gene" : gene_names_ID2.loc[r]['gene'] }, ignore_index=True)
-            n=n+1
-        else:
-            print ("Are you sure you have a C or G at the ligation site?")
+        probesP1 = probesP1.append({"Rarm": str(y[0:round(plp_length/2)]), "Larm": str(y[round(plp_length/2):plp_length]), "anchor" : "TGCGTCTATTTAGTGGAGCC", "idseq" : gene_names_ID2.loc[r]['idseq'], "Lbar_ID" : gene_names_ID2.loc[r]['Lbar_ID'], "AffyID" : gene_names_ID2.loc[r]['AffyID'], "Gene" : gene_names_ID2.loc[r]['gene'] }, ignore_index=True)
+        n=n+1
+
     print ("I just processed",n,"unique target sequences. I am done")
     #The "probes" dataframe at this stage contains the sequences of the probes, before transforming the last base to RNA for ordering 
     probe_col = ["sequence","Lbar_ID", "AffyID", "Gene"]
@@ -568,11 +558,6 @@ def build_plps(path,specific_seqs_final,L_probe_library,plp_length,how='start',o
     probes['code']=list(probes['AffyID'].map(dictiocodes))
     probes.to_csv(path+'/designed_PLPs_final.csv')
     return probes
-
-
-
-
-
 
 def extract_align_variants(genes,ref,path,pathclustal,selection):
     import pandas as pd 
@@ -690,7 +675,6 @@ def extract_align_variants(genes,ref,path,pathclustal,selection):
             plot_alignment(refpath,alignment,common)
             plot_alignment_of_variants(refpath,freqseq,alignment)
     return genesexp,listo,lista
-
 
 def plot_alignment_of_variants(refpath,freqseq,alignment):
     import pandas as pd 
@@ -823,8 +807,6 @@ def extract_seqs_for_variants(path,genesexp,listo,lista,ref,pathclustal):
     hits=dict(zip(genesexp,lista))
     selected['exp_hits']=selected['Gene'].map(hits)
     return selected,unigene,notfound
-
-
 
 def map_sequences(selected,subgroup=1):
     kmers =list(selected['Sequence'])
