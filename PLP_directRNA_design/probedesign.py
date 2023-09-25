@@ -810,7 +810,7 @@ def extract_seqs_for_variants(path,genesexp,listo,lista,ref,pathclustal):
     selected['exp_hits']=selected['Gene'].map(hits)
     return selected,unigene,notfound
 
-def map_sequences(selected,subgroup=1):
+def map_sequences(selected, subgroup, mis_treshold):
     kmers =list(selected['Sequence'])
     #transcriptome = (ref)
     seqlist = []
