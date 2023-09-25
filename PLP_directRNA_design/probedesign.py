@@ -1,4 +1,16 @@
 def extractseq(goi,ref):
+	'''
+	The extractseq function takes two arguments: goi, a list of specific genes of interest, 
+	and ref, the path to a reference file containing biological sequences. 
+	The function reads through the reference file line by line and extracts the sequences 
+	that correspond to the genes specified in the goi list. The extracted sequences are stored 
+	in a list called seqs, which is then returned. 
+	The function is designed to work with files where each biological sequence starts 
+	with a '>' character followed by metadata, and the actual sequence spans one or more 
+	lines until the next '>' character appears. Note that the function expects the 
+	reference file to be formatted in such a way that each gene and its corresponding 
+	sequence are adjacent lines in the file.'''
+	
     import pandas as pd 
     from pandas import DataFrame
     import Bio
@@ -12,61 +24,117 @@ def extractseq(goi,ref):
     from Bio import AlignIO
     import random
     import numpy as np
-    in_f =open (ref, 'r+')
-    seqs=[]
-    su=0
+    
+    # Open the reference file for reading and writing ('r+')
+    in_f = open(ref, 'r+')
+    
+    # Initialize an empty list 'seqs' to store extracted sequences
+    seqs = []
+    
+    # Initialize a variable 'su' to keep track of sequence extraction
+    su = 0
+    
+    # Loop through each line of the reference file
     for line in in_f:
-    #    print(line)
-        if su==1:
-            if line[0]=='>':
-                su=0
-                if lout[0]!='>':
-    #                print(lout)
+        # Check if su is 1, which means the sequence should be captured
+        if su == 1:
+            # If the line starts with '>', it indicates the end of the sequence
+            if line[0] == '>':
+                su = 0
+                # Append the full sequence to 'seqs' if it does not start with '>'
+                if lout[0] != '>':
                     seqs.append(lout)
+            # Otherwise, concatenate the current line to the ongoing sequence
             else:
-                lout=lout+line[:-1]       
+                lout = lout + line[:-1]
+                
+        # If the current line is in 'goi' (genes of interest), set su to 1 and reset lout
         if line in goi:
-   #        seqs.append(line)
-            su=1
-            lout=''
+            seqs.append(line)
+            su = 1
+            lout = ''
+            
+    # Return the list of extracted sequences
     return seqs
 
-def extract_seqs(genes,ref,column='Gene'):
-    import pandas as pd 
-    from pandas import DataFrame
-    import Bio
-    from Bio import SeqIO
-    from Bio.SeqUtils import GC
-    from Bio.Seq import Seq
-    from Bio.SeqRecord import SeqRecord
+def extract_seqs(genes, ref, column='Gene'):
+
+
+	'''
+	The function takes in three arguments:
+
+    genes: A DataFrame containing gene information. The DataFrame must contain a column specified by the column parameter (default to 'Gene').
+    ref: The path to a file that contains sequence information in FASTA format.
+    column: The column name to look for in the genes DataFrame when extracting sequences (default is 'Gene').
+
+	The function extract all the mRNA sequences corresponding to a specific gene, by doing this:
+	
+    Open the reference file specified by ref and read its content.
+    Initialize several lists (headers, header, seq, listo, lista) and a dictionary (dictionary)
+    as placeholders for various data.
+    Loop through each line in the reference file to find the headers (lines starting with >), 
+    appending each to the headers list.
+    Fetch the unique gene identifiers (genesexp) based on the specified column in the genes DataFrame.
+    Loop through each unique gene identifier to find matching headers in the headers list.
+    Populate the lists lista and listo with the number of matching headers and the headers 
+    themselves, respectively.
+    Return the three lists: genesexp (unique gene identifiers), listo (matching headers), 
+    and lista (counts of matching headers).
+
+
+	'''
+    # Import required libraries
+    import pandas as pd
+    from Bio import SeqIO, SeqUtils, Seq, SeqRecord, AlignIO
     from Bio.Align import MultipleSeqAlignment
     from Bio.Align.Applications import ClustalwCommandline
     import collections
-    from Bio import AlignIO
     import random
     import numpy as np
-    in_f =open (ref, 'r+')
-    headers=list()
+
+    # Open the reference file for reading
+    in_f = open(ref, 'r+')
+
+    # Initialize a list to hold the headers from the reference file
+    headers = list()
+
+    # Loop through each line in the reference file
     for line in in_f:
-    #    print(line)
+        # Check if the line starts with '>', indicating it's a header
         if line[0] == '>':
             headers.append(line)
-    #        print(line)
-    dictionary=dict()
-    header=[]
-    seq=[]
-    genesexp=genes[column].unique()
-    listo=[]
-    lista=[]
-    for ici in genesexp:
-        icis='('+ici+')'
-        matching = [s for s in headers if icis in s]
-        lista.append(len(matching))
-        listo.append(matching)
-    
-    return(genesexp,listo,lista)
 
-def findtargets (mrna,refpath,ie,outfiles,plp_length=30,gc_min=50,gc_max=65):
+    # Initialize variables for later use
+    dictionary = dict()
+    header = []
+    seq = []
+    # Extract unique gene names from the DataFrame based on the specified column
+    genesexp = genes[column].unique()
+    
+    listo = []  # To hold the matching headers
+    lista = []  # To hold the count of matching headers
+
+    # Loop through each unique gene identifier
+    for ici in genesexp:
+        icis = '(' + ici + ')'
+        # Find headers that contain the unique gene identifier
+        matching = [s for s in headers if icis in s]
+        # Add the count of matching headers to lista
+        lista.append(len(matching))
+        # Add the matching headers themselves to listo
+        listo.append(matching)
+
+    # Return the unique gene identifiers, matching headers, and counts
+    return genesexp, listo, lista
+
+
+def findtargets (mrna,refpath,ie,outfiles,plp_length=30,gc_min=50,gc_max=65,ligationsite_GC=True):
+	'''
+	The function extracts, for a given mRNA, all the possible k-mers.
+	k (k-mer length) is specified by plp_length (int, defaults to 30).
+	The k-mers are then filtered by upper and lower GC content (defaults = 50-65),
+	and screened for G or C at the ligation site (beneficial but not crucial, optional but default =True)
+	'''
     import pandas as pd 
     from pandas import DataFrame
     import Bio
@@ -83,24 +151,32 @@ def findtargets (mrna,refpath,ie,outfiles,plp_length=30,gc_min=50,gc_max=65):
     targets = pd.DataFrame(columns=['Gene', 'Position', 'Sequence'])
     end = len(mrna)-(plp_length-1)
     #print (end)
-    for i in range (0, end):
-        #print (mrna[i:i+30])
-    #The next line checks if position 16 (remember python is 0-indexed) is a C or G
-        if mrna.seq[i+round(plp_length/2)] == 'C' or mrna.seq[i+round(plp_length/2)] == 'G' :
-            #The next line filters out any probe with GC content <= 50 and >=65
-            if GC(mrna.seq[i:i+plp_length]) > gc_min:
-                if GC(mrna.seq[i:i+plp_length]) < gc_max:
-                    if mrna.seq[i:i+plp_length].count("AAA")==0 and mrna.seq[i:i+plp_length].count("TTT")==0 and mrna.seq[i:i+plp_length].count("GGG")==0 and mrna.seq[i:i+plp_length].count("CCC")==0:
-                    #Here I create a dataframe with all the suitable targets, where column 1 is the start position and column 2 is the actual sequence.
-                        #print (GC(mrna.seq[i:i+30]))
-                        targets = targets.append({'Gene': mrna.id, 'Position': i, 'Sequence':mrna.seq[i:i+plp_length]}, ignore_index=True)  
-                        pato=refpath+ '/target_regions_'+mrna.id+'_'+str(ie)+'.csv'
-                        outfiles.append(pato)
-                        targets.to_csv(pato)
+    for i in range(0, end):
+        # Conditional check for the central base ('C' or 'G') based on ligationsite_GC flag
+        if ligationsite_GC:
+            central_condition = mrna.seq[i+round(plp_length/2)] == 'C' or mrna.seq[i+round(plp_length/2)] == 'G'
+        else:
+            central_condition = True
+        
+        if central_condition:
+            if GC(mrna.seq[i:i+plp_length]) > gc_min and GC(mrna.seq[i:i+plp_length]) < gc_max:
+                if mrna.seq[i:i+plp_length].count("AAA")==0 and mrna.seq[i:i+plp_length].count("TTT")==0 and mrna.seq[i:i+plp_length].count("GGG")==0 and mrna.seq[i:i+plp_length].count("CCC")==0:
+                    targets = targets.append({'Gene': mrna.id, 'Position': i, 'Sequence':mrna.seq[i:i+plp_length]}, ignore_index=True)
+                    pato = refpath + '/target_regions_' + mrna.id + '_' + str(ie) + '.csv'
+                    outfiles.append(pato)
+                    targets.to_csv(pato)
     return [targets,outfiles]   
 
 
 def plot_alignment(refpath,alignment,common):
+	 """
+    Plots common regions through sequence variants.
+    
+    Parameters:
+    refpath (str): The directory path where the plot will be saved.
+    alignment (Bio.Align.MultipleSeqAlignment): The multiple sequence alignment object.
+    common (list): List or array specifying common regions in alignment.
+    """
     import pandas as pd 
     from pandas import DataFrame
     import Bio
@@ -127,6 +203,16 @@ def plot_alignment(refpath,alignment,common):
 
 
 def extract_and_align(genes,ref,path,pathclustal):
+	'''
+	The purpose of this function is to extract and align multiple sequences 
+	for a given list of genes from a reference.
+	The function requires the user to have ClustalW2 installed and specify its path
+	If multiple sequences are available for a gene, the function uses ClustalW to perform 
+	sequence alignment. It also calculates the most common characters at each position 
+	and uses this information for further analysis or visualization.
+	
+	notfound: List of genes that were not found.
+	'''
     import pandas as pd 
     import os
     from pandas import DataFrame
@@ -283,6 +369,17 @@ def retrieve_targets(outfiles,path):
 
 
 def select_sequences(path,selected,genes_required,number_of_selected,subgroup=1):
+	'''
+	The function takes in five parameters:
+	The function select_sequences is intended to filter and select a specified number of 
+	sequences from a given dataset based on given genes and other parameters.
+
+    path: The location where the resulting CSV will be saved.
+    selected: A DataFrame containing sequences.
+    genes_required: A list of genes to be included.
+    number_of_selected: The number of sequences to be selected for each gene.
+    subgroup: An optional parameter to label the resulting CSV file; it defaults to 1.
+	'''
     import pandas as pd
     import random 
     pan=selected
@@ -310,10 +407,16 @@ def select_sequences(path,selected,genes_required,number_of_selected,subgroup=1)
     return selected2
     
 def check_plps(bcf_all,final_designed,genes,path,subgroup=1):
+	'''
+	This function checks the output of the mapping function, to exclude the non-specific
+	Padlock probes.
+	'''
     import pandas as pd
     import numpy as np
     import random
+    # Filter bcf_all dataframe to only include rows where the 'Gene' value is in the genes dataframe
     bcf_all2=bcf_all[bcf_all['Gene'].isin(genes['Gene'])]
+    # Add a 'same' column that checks if 'exp_hits' is the same as 'number_of_hits' and encodes True as 1 and False as 0
     bcf_all['same']=(bcf_all['exp_hits']==bcf_all['number_of_hits'])*1
     outp=[]
     for s in bcf_all.index:
@@ -720,3 +823,29 @@ def extract_seqs_for_variants(path,genesexp,listo,lista,ref,pathclustal):
     hits=dict(zip(genesexp,lista))
     selected['exp_hits']=selected['Gene'].map(hits)
     return selected,unigene,notfound
+
+
+
+def map_sequences(selected,subgroup=1):
+    kmers =list(selected['Sequence'])
+    #transcriptome = (ref)
+    seqlist = []
+    hitlist = []
+    lenlist = []
+    s=0
+    for sequence in kmers:
+        s=s+1
+        print ('Looking for sequence ('+str(s)+'/'+str(len(kmers))+'): '+sequence + ' allowing ' + str(mismatches) + ' mismatches')
+        ########################################MODIFY CUTADAPT PATH IF NEEDED#############################
+        output= !cutadapt -j 0 -a $sequence --overlap 30 --untrimmed-output /dev/null $transcriptome --no-indels -e $mismatches --action=none 
+        n=0
+        c2 = [line for line in output if line[0:1] == '>']
+        print ('Found '+str(len(c2))+' hits')
+        seqlist.append (sequence)
+        hitlist.append (c2)
+        lenlist.append (len(c2))
+    expoutput = pd.DataFrame(list(zip(seqlist, hitlist, lenlist)),
+                   columns =['sequence_with_Ns', 'hits', 'number_of_hits'])
+    bcf_all=pd.concat([selected.reset_index(),expoutput],axis=1)
+    bcf_all.to_csv(path+'mapped_sequences'+str(subgroup)+'.csv')
+    return bcf_all

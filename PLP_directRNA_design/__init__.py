@@ -1,1 +1,1 @@
-from PLP_directRNA_design.PLP_design import *
+from PLP_directRNA_design.probedesign import *
