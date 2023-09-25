@@ -1,3 +1,6 @@
+from weakref import ref
+
+
 def extractseq(goi,ref):
 
     '''
@@ -810,7 +813,7 @@ def extract_seqs_for_variants(path,genesexp,listo,lista,ref,pathclustal):
     selected['exp_hits']=selected['Gene'].map(hits)
     return selected,unigene,notfound
 
-def map_sequences(selected, subgroup, mis_threshold, transcriptome):
+def map_sequences(selected, subgroup, mis_threshold, transcriptome=ref):
     kmers =list(selected['Sequence'])
     #transcriptome = (ref)
     seqlist = []
