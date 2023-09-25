@@ -198,7 +198,7 @@ def plot_alignment(refpath,alignment,common):
     plt.savefig(refpath+'/common_regions_though_variants.png')
     plt.close(fig)
     
-def extract_and_align(genes,ref,path,pathclustal):
+def extract_and_align(genes, ref, path, pathclustal, plp_length=30, gc_min=50, gc_max=65, ligationsite_GC=True):
     '''
     The purpose of this function is to extract and align multiple sequences 
     for a given list of genes from a reference.
@@ -206,6 +206,8 @@ def extract_and_align(genes,ref,path,pathclustal):
     If multiple sequences are available for a gene, the function uses ClustalW to perform 
     sequence alignment. It also calculates the most common characters at each position 
     and uses this information for further analysis or visualization.
+
+    Some arguments as passed to the function findtargets, so please refer to that function for specs.
 
     notfound: List of genes that were not found.
     '''
@@ -270,7 +272,7 @@ def extract_and_align(genes,ref,path,pathclustal):
                 for seq_record in SeqIO.parse(refpath+"/seqs.fasta", "fasta"):
                     ie=ie+1
                     seq_record = seq_record.upper()
-                    targetsall,outfiles = findtargets(seq_record,refpath,ie,outfiles)       
+                    targetsall, outfiles = findtargets(seq_record, refpath, ie, outfiles, plp_length, gc_min, gc_max, ligationsite_GC)       
         else:   
             gen=genesexp[holi]
             goi=listo[holi]
@@ -335,7 +337,7 @@ def extract_and_align(genes,ref,path,pathclustal):
                 seq_record = seq_record.upper()
                 #print (seq_record)
                 ie=ie+1
-                targetsall,outfiles = findtargets(seq_record,refpath,ie,outfiles)
+                targetsall, outfiles = findtargets(seq_record, refpath, ie, outfiles, plp_length, gc_min, gc_max, ligationsite_GC)
     #           print(targetsall)
     of=pd.DataFrame(outfiles)
     of.to_csv(path+'/outfiles.csv')
@@ -559,7 +561,7 @@ def build_plps(path,specific_seqs_final,L_probe_library,plp_length,how='start',o
     probes.to_csv(path+'/designed_PLPs_final.csv')
     return probes
 
-def extract_align_variants(genes,ref,path,pathclustal,selection):
+def extract_align_variants(genes, ref, path, pathclustal, selection, plp_length=30, gc_min=50, gc_max=65, ligationsite_GC=True):
     import pandas as pd 
     import os
     from pandas import DataFrame
@@ -624,7 +626,7 @@ def extract_align_variants(genes,ref,path,pathclustal,selection):
                 for seq_record in SeqIO.parse(refpath+"/seqs_variants.fasta", "fasta"):
                     ie=ie+1
                     seq_record = seq_record.upper()
-                    targetsall,outfiles = findtargets(seq_record,refpath,ie,outfiles)       
+                    targetsall, outfiles = findtargets(seq_record, refpath, ie, outfiles, plp_length, gc_min, gc_max, ligationsite_GC)       
         else:   
             gen=genesexp[holi]
             goi=listo[holi]
@@ -747,7 +749,7 @@ def extract_seqs_for_variants(path,genesexp,listo,lista,ref,pathclustal):
                 for seq_record in SeqIO.parse(refpath+"/seqs.fasta", "fasta"):
                     ie=ie+1
                     seq_record = seq_record.upper()
-                    targetsall,outfiles = findtargets(seq_record,refpath,ie,outfiles)       
+                    targetsall, outfiles = findtargets(seq_record, refpath, ie, outfiles, plp_length, gc_min, gc_max, ligationsite_GC)       
         else:   
             gen=genesexp[holi]
             goi=listo[holi]
