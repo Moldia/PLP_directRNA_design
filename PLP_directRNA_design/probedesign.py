@@ -822,7 +822,8 @@ def map_sequences(selected, subgroup, mis_threshold, transcriptome=ref):
     s=0
     for sequence in kmers:
         s=s+1
-        print ('Looking for sequence ('+str(s)+'/'+str(len(kmers))+'): '+sequence + ' allowing ' + str(mis_threshold) + ' mismatches')
+        mis_threshold = str(mis_threshold)
+        print ('Looking for sequence ('+str(s)+'/'+str(len(kmers))+'): '+sequence + ' allowing ' + (mis_threshold) + ' mismatches')
         ########################################MODIFY CUTADAPT PATH IF NEEDED#############################
         import subprocess
 
