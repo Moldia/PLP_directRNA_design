@@ -832,11 +832,11 @@ def map_sequences(selected, subgroup, mis_threshold, transcriptome=ref):
             "--untrimmed-output", "/dev/null", str(transcriptome), 
             "--no-indels", "-e", str(mis_threshold), "--action=none"
         ]
-
-        output = subprocess.check_output(command).decode('utf-8')
+        print("Executing:", " ".join(command))
         #output= !cutadapt -j 0 -a $sequence --overlap 30 --untrimmed-output /dev/null $transcriptome --no-indels -e $mismatches --action=none 
         n=0
-        c2 = [line for line in output if line[0:1] == '>']
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT).decode('utf-8')        
+        c2 = [line for line in output.split('\n') if line.startswith('>')]
         print ('Found '+str(len(c2))+' hits')
         seqlist.append (sequence)
         hitlist.append (c2)
