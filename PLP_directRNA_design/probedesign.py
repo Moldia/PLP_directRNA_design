@@ -814,8 +814,8 @@ def extract_seqs_for_variants(path,genesexp,listo,lista,ref,pathclustal):
     return selected,unigene,notfound
 
 def map_sequences(selected, subgroup, mis_threshold, transcriptome=ref):
-	import pandas as pd 
-	kmers =list(selected['Sequence'])
+    import pandas as pd 
+    kmers =list(selected['Sequence'])
     #transcriptome = (ref)
     seqlist = []
     hitlist = []
